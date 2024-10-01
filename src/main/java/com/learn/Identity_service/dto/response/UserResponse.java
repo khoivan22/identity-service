@@ -1,7 +1,7 @@
-package com.learn.Identity_service.dto.request;
+package com.learn.Identity_service.dto.response;
 
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
@@ -9,15 +9,16 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 import java.util.Set;
 
-@Setter
 @Getter
+@Setter
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserCreationRequest {
-    @Size(min = 4, message = "USERNAME_INVALID")
+public class UserResponse {
+    String id;
     String username;
     String password;
     String firstname;
     String lastname;
     LocalDate dob;
-    Set<String> roles;
+    Set<RoleResponse> roles;
 }

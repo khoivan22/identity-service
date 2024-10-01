@@ -12,9 +12,9 @@ import java.util.Set;
 @Setter
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserCreationRequest {
+public class UserUpdateRequest {
+    String id;
     @Size(min = 4, message = "USERNAME_INVALID")
-    String username;
     String password;
     String firstname;
     String lastname;
