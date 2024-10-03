@@ -1,15 +1,17 @@
 package com.learn.Identity_service.service.serviceImpl;
 
 import com.learn.Identity_service.dto.request.UserCreationRequest;
+import com.learn.Identity_service.dto.response.UserResponse;
 import com.learn.Identity_service.entity.User;
-import com.learn.Identity_service.exception.UserErrorCode;
-import com.learn.Identity_service.exception.UserException;
+import com.learn.Identity_service.exception.AppErrorCode;
+import com.learn.Identity_service.exception.AppException;
 import com.learn.Identity_service.mapper.UserMapper;
 import com.learn.Identity_service.repository.UserRepository;
 import com.learn.Identity_service.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,28 +20,30 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserServiceImpl implements UserService {
+
     UserRepository userRepository;
     UserMapper userMapper;
-
+    PasswordEncoder passwordEncoder;
 
     @Override
-    public User createRequest(UserCreationRequest userRequest) {
+    public UserResponse createRequest(UserCreationRequest userRequest) {
 
-        if(userRepository.existsByUsername(userRequest.getUsername()))
-            throw new UserException(UserErrorCode.USER_EXISTED);
+        if (userRepository.existsByUsername(userRequest.getUsername()))
+            throw new AppException(AppErrorCode.USER_EXISTED);
 
-        User user = userMapper.requestToUser(userRequest);
+        User user = userMapper.toUser(userRequest);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        return userRepository.save(user);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
     @Override
-    public List<User> getAllUser() {
-        return userRepository.findAll();
+    public List<UserResponse> getAllUser() {
+        return userMapper.toUserResposeList(userRepository.findAll());
     }
 
     @Override
-    public User getUserById(String id) {
-        return userRepository.findById(id).orElseThrow(() -> new UserException(UserErrorCode.USER_NOTFOUND));
+    public UserResponse getUserById(String id) {
+        return userMapper.toUserResponse(userRepository.findById(id).orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_FOUND)));
     }
 }
