@@ -1,27 +1,28 @@
 package com.learn.Identity_service.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-import java.util.UUID;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 public class User {
     @Id
     @GeneratedValue (strategy = GenerationType.UUID)
-    private String id;
-    private String username;
-    private String password;
-    private String firstname;
-    private String lastname;
-    private LocalDate dob;
+    String id;
+    String username;
+    String password;
+    String firstname;
+    String lastname;
+    LocalDate dob;
+    @ManyToMany
+    Set<Role> roles;
 }

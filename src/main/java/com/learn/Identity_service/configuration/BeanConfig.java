@@ -1,6 +1,6 @@
 package com.learn.Identity_service.configuration;
 
-import com.learn.Identity_service.constant.UtilConstant;
+import com.learn.Identity_service.constant.ConstantUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -10,6 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class BeanConfig {
     @Bean
     public PasswordEncoder encoder() {
-        return new BCryptPasswordEncoder(UtilConstant.STRENGTH);
+        return new BCryptPasswordEncoder(ConstantUtils.STRENGTH);
     }
 }

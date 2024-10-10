@@ -5,7 +5,7 @@ import com.learn.Identity_service.dto.request.IntrospectRequest;
 import com.learn.Identity_service.dto.response.AuthenticationResponse;
 import com.learn.Identity_service.dto.response.IntrospectResponse;
 import com.learn.Identity_service.entity.User;
-import com.learn.Identity_service.exception.AppErrorCode;
+import com.learn.Identity_service.exception.ErrorCode;
 import com.learn.Identity_service.exception.AppException;
 import com.learn.Identity_service.repository.UserRepository;
 import com.learn.Identity_service.service.AuthenticationService;
@@ -18,23 +18,24 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
 
@@ -45,13 +46,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
         User user = userRepository.findOneByUsername(authenticationRequest.getUsername())
-                .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         boolean authenticated = passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword());
         if (!authenticated)
-            throw new AppException(AppErrorCode.UNAUTHENTICATED);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
 
-        var token = generateToken(authenticationRequest.getUsername());
+        var token = generateToken(user);
 
         return AuthenticationResponse.builder()
                 .token(token)
@@ -76,17 +77,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
-    private String generateToken(String username) {
+    private String generateToken(User user) {
 
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(username)
+                .subject(user.getUsername())
                 .issuer("identity.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
-                .claim("customClaim", "custom")
+                .claim("scope", buildScope(user))
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
 
@@ -96,9 +97,24 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             jwsObject.sign(new MACSigner(signedKey.getBytes()));
             return jwsObject.serialize();
         } catch (JOSEException e) {
-            log.error("Can not create token", e);
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage());
         }
 
     }
+
+    private String buildScope(User user){
+
+        StringJoiner stringJoiner = new StringJoiner(" ");
+
+        if(!CollectionUtils.isEmpty(user.getRoles()))
+            user.getRoles().forEach(role -> {
+                stringJoiner.add("ROLE_" + role.getName());
+                if(!CollectionUtils.isEmpty(role.getPermissions()))
+                    role.getPermissions()
+                            .forEach(permission -> stringJoiner.add(permission.getName()));
+            });
+
+        return stringJoiner.toString();
+    }
+
 }
