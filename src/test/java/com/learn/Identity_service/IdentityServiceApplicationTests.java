@@ -8,6 +8,8 @@ class IdentityServiceApplicationTests {
 
 	@Test
 	void contextLoads() {
+		int i = 12;
+		int[] a = new int[12];
 	}
 
 }
