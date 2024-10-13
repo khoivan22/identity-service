@@ -5,6 +5,7 @@ import com.learn.Identity_service.dto.request.UserUpdateRequest;
 import com.learn.Identity_service.dto.response.ApiResponse;
 import com.learn.Identity_service.dto.response.UserResponse;
 import com.learn.Identity_service.service.UserService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,7 +22,7 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    ApiResponse<UserResponse> create(@RequestBody UserCreationRequest userCreationRequest) {
+    ApiResponse<UserResponse> create(@RequestBody @Valid UserCreationRequest userCreationRequest) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.createUser(userCreationRequest))
                 .build();

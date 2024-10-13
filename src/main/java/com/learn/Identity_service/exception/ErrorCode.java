@@ -14,7 +14,8 @@ public enum ErrorCode {
     USER_NOT_EXISTED(1005, "User not existed.", HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1007, "You don't have permission", HttpStatus.FORBIDDEN),
-    UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR);
+    UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_DATE(1008, "Invalid date: your age must > {min}", HttpStatus.BAD_REQUEST);
 
     private final int code;
     private final String message;
